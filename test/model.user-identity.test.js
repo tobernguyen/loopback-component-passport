@@ -165,6 +165,26 @@ describe('UserIdentity', function() {
         });
   });
 
+  it('supports deny 3rd party login when profileToUser return error attribute', function(done) {
+    UserIdentity.login('google', 'oAuth 2.0',
+      { emails: [
+        { value: 'foo@baz.com' },
+      ], id: 'f100',
+      }, { accessToken: 'at1', refreshToken: 'rt1' }, {
+        profileToUser: function(provider, profile) {
+          var error = new Error('Please login with email domain @foo.com');
+          error.status = 401;
+
+          return {
+            error: error
+          }
+        } }, function(err, user, identity, token) {
+          assert.equal(err.message, 'Please login with email domain @foo.com');
+          assert.equal(err.status, '401');
+          done();
+        });
+  });
+
   it('supports ldap login', function(done) {
     var identity = { emails: [{ value: 'fooldap@bar.com' }], id: 'f123ldap',
      username: 'xyzldap' };
